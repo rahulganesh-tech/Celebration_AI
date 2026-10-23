@@ -1,6 +1,7 @@
 /**
  * Celebration AI — Main Client Application
- * Handles presets, demo mode, plan rendering across 4 pillars, and the algorithmic Budget Rebalancer.
+ * Includes 4 Pillars, Algorithmic Budget Rebalancer with Category Locks,
+ * Google Calendar (.ics) export, WhatsApp Family Dispatch, and Vendor Negotiation Shield.
  */
 
 (function () {
@@ -53,6 +54,7 @@
   let currentPlan = null;
   let originalBudgetCopy = null;
   let lastRebalanceSuggestion = null;
+  let currentStrategy = 'balanced'; // 'balanced' | 'guest_first' | 'aggressive'
 
   // DOM Elements
   const planForm = document.getElementById('planForm');
@@ -67,6 +69,8 @@
   const planResultsSection = document.getElementById('planResultsSection');
   const printPlanBtn = document.getElementById('printPlanBtn');
   const copyPlanSummaryBtn = document.getElementById('copyPlanSummaryBtn');
+  const downloadCalendarBtn = document.getElementById('downloadCalendarBtn');
+  const syncCalendarTabBtn = document.getElementById('syncCalendarTabBtn');
   const apiStatusBadge = document.getElementById('apiStatusBadge');
 
   // Budget & Rebalancer DOM Elements
@@ -132,6 +136,21 @@
           guestCountInput.value = data.guests;
           eventTypeInput.value = data.type;
           eventLocationInput.value = data.location;
+        }
+      });
+    });
+  }
+
+  // Setup Rebalance Strategy Chips
+  function setupStrategies() {
+    const chips = document.querySelectorAll('.strategy-chip');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentStrategy = chip.dataset.strategy;
+        if (currentPlan) {
+          renderBudget(currentPlan);
         }
       });
     });
@@ -270,7 +289,7 @@
       leg.className = 'legend-item';
       leg.innerHTML = `
         <span class="legend-color" style="background-color: ${color}"></span>
-        <span>${cat.name} (${Math.round(pct)}%)</span>
+        <span>${cat.name} (${Math.round(pct)}%) ${cat.locked ? '🔒' : ''}</span>
       `;
       budgetLegend.appendChild(leg);
     });
@@ -279,14 +298,19 @@
     budgetGrid.innerHTML = '';
     categories.forEach((cat, idx) => {
       const card = document.createElement('div');
-      card.className = 'category-card';
+      card.className = `category-card ${cat.locked ? 'locked-card' : ''}`;
       const pct = Math.round((cat.amount / totalBudget) * 100);
 
       card.innerHTML = `
         <div>
           <div class="category-header">
             <span class="category-title">${cat.name}</span>
-            <span class="category-priority-badge priority-${cat.priority || 'medium'}">${cat.priority || 'medium'}</span>
+            <div class="category-header-badges">
+              <span class="category-priority-badge priority-${cat.priority || 'medium'}">${cat.priority || 'medium'}</span>
+              <button type="button" class="lock-toggle-btn ${cat.locked ? 'is-locked' : ''}" title="${cat.locked ? 'Category locked (shielded from automated cuts)' : 'Click to lock category'}">
+                ${cat.locked ? '🔒 Locked' : '🔓 Elastic'}
+              </button>
+            </div>
           </div>
           <p class="category-note">${cat.note || ''}</p>
         </div>
@@ -315,25 +339,50 @@
         }
       });
 
+      // Lock toggle listener
+      const lockBtn = card.querySelector('.lock-toggle-btn');
+      lockBtn.addEventListener('click', () => {
+        cat.locked = !cat.locked;
+        renderBudget(currentPlan);
+      });
+
       budgetGrid.appendChild(card);
     });
   }
 
-  // Algorithmic Budget Rebalancer
+  // Algorithmic Budget Rebalancer with Lock Respect and Strategy Weighting
   function computeAndShowRebalance(plan, deficit) {
     const categories = plan.budgetBreakdown;
     
     // Identify flexible categories that have room to be reduced
-    // (excluding items with flexibility <= 0.1 or critical priority)
+    // Rule: Locked categories are strictly protected!
     const eligible = [];
     let totalWeight = 0;
 
     categories.forEach((cat, idx) => {
-      const flexibility = cat.flexibility !== undefined ? cat.flexibility : 0.5;
+      // If manually locked, skip entirely!
+      if (cat.locked) return;
+
+      let flexibility = cat.flexibility !== undefined ? cat.flexibility : 0.5;
+
+      // Apply Strategy Multipliers
+      if (currentStrategy === 'guest_first') {
+        if (cat.id && (cat.id.includes('catering') || cat.id.includes('music') || cat.id.includes('dj'))) {
+          flexibility = 0.05; // Shield food & music
+        }
+        if (cat.id && (cat.id.includes('decor') || cat.id.includes('invites') || cat.id.includes('clothing'))) {
+          flexibility = 1.0; // Heavily absorb cuts in decor & clothing
+        }
+      } else if (currentStrategy === 'aggressive') {
+        if (cat.id && (cat.id.includes('decor') || cat.id.includes('invites'))) {
+          flexibility = 1.5;
+        }
+      }
+
       const minAllowed = cat.minAllowed || Math.round(cat.amount * 0.4);
       const capacity = cat.amount - minAllowed;
 
-      if (flexibility > 0.2 && capacity > 5000 && cat.priority !== 'critical') {
+      if (flexibility > 0.1 && capacity > 5000 && cat.priority !== 'critical') {
         const weight = capacity * flexibility;
         eligible.push({ idx, cat, capacity, flexibility, weight });
         totalWeight += weight;
@@ -342,7 +391,10 @@
 
     if (eligible.length === 0 || totalWeight === 0) {
       alertTitle.textContent = `Budget Exceeded by ${formatINR(deficit)}`;
-      alertDesc.textContent = `All other categories are already at their minimum allowed allocations. Consider increasing your total budget or manually reducing higher priority line items.`;
+      alertDesc.innerHTML = `
+        All other categories are either <strong>🔒 Locked</strong> or already at their minimum allowed floors. 
+        Unlock one or more categories (e.g. Stage Decor or Favors) so the algorithm can balance the excess.
+      `;
       applyRebalanceBtn.style.display = 'none';
       rebalanceAlert.classList.remove('hidden');
       return;
@@ -377,8 +429,8 @@
 
     alertTitle.textContent = `Budget Exceeded by ${formatINR(deficit)}`;
     alertDesc.innerHTML = `
-      <strong>Smart Algorithmic Recommendation:</strong> Trim ${cutDescriptions}.
-      This keeps your non-negotiable Catering and Emergency Logistics Buffer 100% protected while restoring your exact <strong>${formatINR(plan.meta.totalBudget)}</strong> ceiling.
+      <strong>Smart Algorithmic Recommendation (${currentStrategy === 'guest_first' ? 'Guest Experience Strategy' : currentStrategy === 'aggressive' ? 'Aggressive Trimming Strategy' : 'Balanced Strategy'}):</strong> Trim ${cutDescriptions}.
+      This preserves your <strong>🔒 Locked Categories</strong>, essential Catering baselines, and Emergency Logistics Buffer while returning your total to <strong>${formatINR(plan.meta.totalBudget)}</strong>.
     `;
 
     lastRebalanceSuggestion = cuts;
@@ -417,7 +469,7 @@
       return;
     }
 
-    timeline.forEach(dayItem => {
+    timeline.forEach((dayItem, dIdx) => {
       const dayCard = document.createElement('div');
       dayCard.className = 'timeline-day-card';
 
@@ -425,7 +477,10 @@
       (dayItem.schedule || []).forEach(evt => {
         eventsHtml += `
           <div class="event-item">
-            <span class="event-time-badge">${evt.time}</span>
+            <div class="event-top-info">
+              <span class="event-time-badge">${evt.time}</span>
+              ${evt.incharge ? `<span class="event-lead-badge">👤 Lead: ${evt.incharge}</span>` : ''}
+            </div>
             <div class="event-activity">${evt.activity}</div>
             <p class="event-details">${evt.details}</p>
           </div>
@@ -438,18 +493,115 @@
             <span class="day-badge">${dayItem.day}</span>
             <h4 class="day-title">${dayItem.title}</h4>
           </div>
-          <span class="day-date">${dayItem.date || ''}</span>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="day-date">${dayItem.date || ''}</span>
+            <button type="button" class="btn btn-small btn-outline copy-day-wa-btn" data-day="${dIdx}" title="Copy formatted WhatsApp schedule for family group">
+              📲 WhatsApp Schedule
+            </button>
+          </div>
         </div>
         <div class="day-events">
           ${eventsHtml}
         </div>
       `;
 
+      // Copy WhatsApp Day Schedule listener
+      const copyWaBtn = dayCard.querySelector('.copy-day-wa-btn');
+      copyWaBtn.addEventListener('click', () => {
+        copyWhatsAppDaySchedule(dayItem, copyWaBtn);
+      });
+
       timelineContainer.appendChild(dayCard);
     });
   }
 
-  // Render Pillar 3: Vendor Checklist
+  // Copy WhatsApp Day Schedule Formatter
+  function copyWhatsAppDaySchedule(dayItem, btn) {
+    let msg = `🎊 *${currentPlan.meta.eventName}* 🎊\n` +
+      `📅 *${dayItem.day}: ${dayItem.title} (${dayItem.date || ''})*\n` +
+      `📍 Location: ${currentPlan.meta.location}\n` +
+      `------------------------------------\n`;
+
+    (dayItem.schedule || []).forEach(evt => {
+      msg += `⏰ *${evt.time}* — ${evt.activity}\n`;
+      if (evt.incharge) msg += `👤 _Lead: ${evt.incharge}_\n`;
+      msg += `📝 ${evt.details}\n\n`;
+    });
+
+    msg += `✨ *Planned with Celebration AI (PromptWars x HackArena)*`;
+
+    navigator.clipboard.writeText(msg).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied for WhatsApp!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  // Generate and Download Google Calendar .ics File
+  function exportGoogleCalendarICS() {
+    if (!currentPlan || !currentPlan.timeline) return;
+
+    let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Celebration AI//PromptWars HackArena//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n";
+
+    // Base mock date for demonstration (e.g. next month weekend)
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() + 30);
+
+    currentPlan.timeline.forEach((dayItem, dIdx) => {
+      const eventDate = new Date(baseDate);
+      eventDate.setDate(eventDate.getDate() + dIdx);
+
+      (dayItem.schedule || []).forEach((evt, eIdx) => {
+        const uid = `celebration-${Date.now()}-${dIdx}-${eIdx}@celebrationai.app`;
+        const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+        // Parse time like "11:00 AM"
+        let hours = 10;
+        let mins = 0;
+        const match = evt.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match) {
+          hours = parseInt(match[1], 10);
+          mins = parseInt(match[2], 10);
+          if (match[3].toUpperCase() === 'PM' && hours < 12) hours += 12;
+          if (match[3].toUpperCase() === 'AM' && hours === 12) hours = 0;
+        }
+
+        const start = new Date(eventDate);
+        start.setHours(hours, mins, 0);
+        const end = new Date(start);
+        end.setHours(start.getHours() + 2); // 2 hour block
+
+        const formatICSDate = (d) => {
+          return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        };
+
+        icsContent += "BEGIN:VEVENT\r\n";
+        icsContent += `UID:${uid}\r\n`;
+        icsContent += `DTSTAMP:${dtstamp}\r\n`;
+        icsContent += `DTSTART:${formatICSDate(start)}\r\n`;
+        icsContent += `DTEND:${formatICSDate(end)}\r\n`;
+        icsContent += `SUMMARY:${evt.activity} (${dayItem.day})\r\n`;
+        icsContent += `LOCATION:${currentPlan.meta.location}\r\n`;
+        icsContent += `DESCRIPTION:${evt.details} (Lead: ${evt.incharge || 'Family'})\r\n`;
+        icsContent += "STATUS:CONFIRMED\r\n";
+        icsContent += "END:VEVENT\r\n";
+      });
+    });
+
+    icsContent += "END:VCALENDAR\r\n";
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(currentPlan.meta.eventName || 'Celebration_Plan').replace(/\s+/g, '_')}_Calendar.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // Render Pillar 3: Vendor Checklist & Negotiation Shield
   function renderVendors(vendors) {
     vendorList.innerHTML = '';
     vendorCountBadge.textContent = `${vendors ? vendors.length : 0} Items`;
@@ -471,6 +623,8 @@
       const card = document.createElement('div');
       card.className = `vendor-item-card ${item.done ? 'completed' : ''}`;
 
+      const redFlagsHtml = (item.redFlags || []).map(rf => `<span class="red-flag-tag">⚠️ ${rf}</span>`).join(' ');
+
       card.innerHTML = `
         <input 
           type="checkbox" 
@@ -488,15 +642,43 @@
           <div class="vendor-tip-box">
             <strong>Insider Due Diligence Tip:</strong> ${item.tip}
           </div>
+
+          <!-- Negotiation Shield Expander -->
+          <div class="negotiation-shield-box">
+            <div class="shield-header">
+              <span class="shield-title">🛡️ Contract Red Flags To Screen:</span>
+            </div>
+            <div class="red-flags-list">
+              ${redFlagsHtml || '<span class="category-note">Verify GST breakdown and delivery timestamp.</span>'}
+            </div>
+            ${item.bargainScript ? `
+              <div class="bargain-box">
+                <span class="bargain-text">💬 "${item.bargainScript}"</span>
+                <button type="button" class="btn btn-small btn-outline copy-script-btn">📋 Copy Script</button>
+              </div>
+            ` : ''}
+          </div>
         </div>
       `;
 
+      // Checkbox listener
       const check = card.querySelector('.vendor-checkbox');
       check.addEventListener('change', (e) => {
         item.done = e.target.checked;
         card.classList.toggle('completed', item.done);
         updateChecklistStats();
       });
+
+      // Copy Bargaining Script listener
+      const copyScriptBtn = card.querySelector('.copy-script-btn');
+      if (copyScriptBtn && item.bargainScript) {
+        copyScriptBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(item.bargainScript).then(() => {
+            copyScriptBtn.textContent = '✓ Script Copied!';
+            setTimeout(() => { copyScriptBtn.textContent = '📋 Copy Script'; }, 2000);
+          });
+        });
+      }
 
       vendorList.appendChild(card);
     });
@@ -520,18 +702,25 @@
 
       card.innerHTML = `
         <div class="idea-top">
-          <span class="idea-tag">${idea.tag || 'Smart Idea'}</span>
+          <div class="idea-badges">
+            <span class="idea-tag">${idea.tag || 'Smart Idea'}</span>
+            ${idea.savings ? `<span class="savings-pill">${idea.savings}</span>` : ''}
+          </div>
           <button type="button" class="btn btn-small btn-outline copy-idea-btn" title="Copy idea">📋 Copy</button>
         </div>
         <div>
           <h4 class="idea-title">${idea.title}</h4>
           <p class="idea-desc">${idea.description}</p>
         </div>
+        <div class="idea-footer">
+          <span class="assign-pill">👥 ${idea.assignTo || 'Family Member'}</span>
+          <span class="category-priority-badge priority-low">Effort: ${idea.difficulty || 'Easy'}</span>
+        </div>
       `;
 
       const copyBtn = card.querySelector('.copy-idea-btn');
       copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(`${idea.title}\n${idea.description}`).then(() => {
+        navigator.clipboard.writeText(`${idea.title}\n${idea.description}\nAssigned to: ${idea.assignTo || 'Family'}`).then(() => {
           copyBtn.textContent = '✓ Copied';
           setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 2000);
         });
@@ -565,7 +754,6 @@
 
   // Try Demo Button
   tryDemoBtn.addEventListener('click', () => {
-    // Load standard wedding demo preset
     const preset = PRESETS.wedding;
     eventPromptInput.value = preset.prompt;
     totalBudgetInput.value = preset.budget;
@@ -573,7 +761,6 @@
     eventTypeInput.value = preset.type;
     eventLocationInput.value = preset.location;
 
-    // Load instantly
     loadPlan({
       prompt: preset.prompt,
       totalBudget: preset.budget,
@@ -588,6 +775,10 @@
   applyRebalanceBtn.addEventListener('click', applyRebalance);
   resetBudgetBtn.addEventListener('click', resetBudget);
 
+  // Calendar Sync Buttons
+  downloadCalendarBtn.addEventListener('click', exportGoogleCalendarICS);
+  syncCalendarTabBtn.addEventListener('click', exportGoogleCalendarICS);
+
   // Print Plan Button
   printPlanBtn.addEventListener('click', () => {
     window.print();
@@ -597,7 +788,7 @@
   copyPlanSummaryBtn.addEventListener('click', () => {
     if (!currentPlan) return;
     const m = currentPlan.meta;
-    const budgetLines = currentPlan.budgetBreakdown.map(b => `- ${b.name}: ${formatINR(b.amount)} (${b.percentage}%)`).join('\n');
+    const budgetLines = currentPlan.budgetBreakdown.map(b => `- ${b.name}: ${formatINR(b.amount)} (${b.percentage}%) ${b.locked ? '[LOCKED]' : ''}`).join('\n');
     const summaryText = `CELEBRATION AI PLAN SUMMARY\n` +
       `=========================\n` +
       `Event: ${m.eventName}\n` +
@@ -617,6 +808,7 @@
   // Initial Boot
   function init() {
     setupPresets();
+    setupStrategies();
     setupTabs();
     checkServerHealth();
 

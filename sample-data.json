@@ -17,6 +17,7 @@
       "priority": "critical",
       "flexibility": 0.1,
       "minAllowed": 450000,
+      "locked": true,
       "note": "Primary cost for 250 guests across 3 days: Welcome lunch, Sangeet live chaat, Haldi snacks, and Royal Wedding feast."
     },
     {
@@ -27,6 +28,7 @@
       "priority": "medium",
       "flexibility": 0.8,
       "minAllowed": 120000,
+      "locked": false,
       "note": "Marigold draping, fairytale lighting canopy, and Mandap floral structure. High savings potential with mandi flowers."
     },
     {
@@ -37,6 +39,7 @@
       "priority": "high",
       "flexibility": 0.3,
       "minAllowed": 120000,
+      "locked": false,
       "note": "2 candid photographers, 1 traditional videographer, drone coverage during Varmala, and edited teaser reels."
     },
     {
@@ -47,6 +50,7 @@
       "priority": "high",
       "flexibility": 0.4,
       "minAllowed": 100000,
+      "locked": false,
       "note": "Bridal lehenga, groom sherwani, family coordinated turbans (safas), and professional bridal makeup artist."
     },
     {
@@ -57,6 +61,7 @@
       "priority": "low",
       "flexibility": 0.9,
       "minAllowed": 50000,
+      "locked": false,
       "note": "Baraat Punjabi dhol ensemble, Sangeet sound mixer console, wireless mics, and ambient uplighting."
     },
     {
@@ -67,6 +72,7 @@
       "priority": "low",
       "flexibility": 0.9,
       "minAllowed": 25000,
+      "locked": false,
       "note": "Custom animated WhatsApp invites + 150 artisanal dry-fruit & traditional jharokha sweet boxes for elders."
     },
     {
@@ -77,6 +83,7 @@
       "priority": "critical",
       "flexibility": 0.0,
       "minAllowed": 100000,
+      "locked": true,
       "note": "Airport/station guest pickup cabs, emergency vendor overtime, puja samagri, and panditji dakshina."
     }
   ],
@@ -89,17 +96,20 @@
         {
           "time": "11:00 AM",
           "activity": "Guest Welcome & Earthen Kulhad Chai",
-          "details": "Check-in at heritage haveli guestrooms; welcome drinks and rose petal shower."
+          "details": "Check-in at heritage haveli guestrooms; welcome drinks and rose petal shower.",
+          "incharge": "Mama Ji (Maternal Uncle)"
         },
         {
           "time": "02:30 PM",
           "activity": "Courtyard Mehndi & Folk Music",
-          "details": "Intimate henna application with local Rajasthani folk singer and dholak."
+          "details": "Intimate henna application with local Rajasthani folk singer and dholak.",
+          "incharge": "Bride's Sisters & Cousins"
         },
         {
           "time": "07:30 PM",
           "activity": "Sangeet Night & Live Street-Food Stalls",
-          "details": "Choreographed family dance performances, DJ party, live chaat and jalebi counters."
+          "details": "Choreographed family dance performances, DJ party, live chaat and jalebi counters.",
+          "incharge": "Brother / Sangeet Host"
         }
       ]
     },
@@ -111,22 +121,26 @@
         {
           "time": "09:30 AM",
           "activity": "Yellow Sunshine Haldi Ceremony",
-          "details": "Organic turmeric paste rituals with marigold flower petal shower and dhol beats."
+          "details": "Organic turmeric paste rituals with marigold flower petal shower and dhol beats.",
+          "incharge": "Chachi & Bhabhi"
         },
         {
           "time": "04:30 PM",
           "activity": "Royal Baraat Procession & Safa Tying",
-          "details": "Groom arrival with vintage open jeep, brass band, and family safa tying at the gates."
+          "details": "Groom arrival with vintage open jeep, brass band, and family safa tying at the gates.",
+          "incharge": "Groom's Friends & Fufa Ji"
         },
         {
           "time": "06:30 PM",
           "activity": "Grand Varmala Exchange under Floral Canopy",
-          "details": "Milni ceremony between families followed by sunset Varmala with pyrotechnic fountains."
+          "details": "Milni ceremony between families followed by sunset Varmala with pyrotechnic fountains.",
+          "incharge": "Parents & Core Elders"
         },
         {
           "time": "08:00 PM",
           "activity": "Sacred Pheras & Royal Wedding Banquet",
-          "details": "Vedic vows around the holy fire followed by traditional Rajasthani Daal Baati Churma and multi-cuisine dinner."
+          "details": "Vedic vows around the holy fire followed by traditional Rajasthani Daal Baati Churma and multi-cuisine dinner.",
+          "incharge": "Panditji & Family Elders"
         }
       ]
     },
@@ -138,12 +152,14 @@
         {
           "time": "09:30 AM",
           "activity": "Vidaai Ceremony & Family Blessings",
-          "details": "Puffed rice throwing ritual, heartfelt elder blessings, and decorated car departure."
+          "details": "Puffed rice throwing ritual, heartfelt elder blessings, and decorated car departure.",
+          "incharge": "Bride's Parents"
         },
         {
           "time": "11:30 AM",
           "activity": "Relaxed Farewell Brunch & Gift Distribution",
-          "details": "Light brunch (Poha, Kachori, fresh fruits) and distribution of mithai boxes to departing relatives."
+          "details": "Light brunch (Poha, Kachori, fresh fruits) and distribution of mithai boxes to departing relatives.",
+          "incharge": "Logistics Uncle"
         }
       ]
     }
@@ -154,68 +170,119 @@
       "task": "Lock in final per-plate menu (minimum 4 live counters + 2 traditional desserts)",
       "deadline": "45 days before",
       "tip": "Negotiate complimentary breakfast for 50 close relatives staying at the venue.",
-      "done": false
+      "done": false,
+      "redFlags": [
+        "Extra charge for mineral water bottles & ice cubes",
+        "Overtime billing if dinner crosses 11:00 PM",
+        "Staff food billed at full guest plate rate"
+      ],
+      "bargainScript": "Namaste Sharma ji, we are confirming 250 plates across 3 meals. We have quotes at ₹1,100/plate including breakfast for stay guests. If you can match this and waive staff meal charges, we will lock the advance token today."
     },
     {
       "category": "Venue Management",
       "task": "Confirm sound limiter policy, diesel generator backup, and air cooling setup",
       "deadline": "60 days before",
       "tip": "Check exact curfew time for outdoor music (usually 10:00 PM by local police norms).",
-      "done": true
+      "done": true,
+      "redFlags": [
+        "Mandatory in-house decor exclusivity with 30% royalty markup",
+        "DG set diesel fuel billed separately per hour",
+        "Non-refundable caution deposit deduction for minor tape marks"
+      ],
+      "bargainScript": "Dear Venue Manager, we love the property and are ready to finalize. Please confirm in writing that diesel backup for power outages is included in the rental package, and there is zero royalty fee for external floral sourcing."
     },
     {
       "category": "Photographer & Videographer",
       "task": "Provide family member VIP list and finalize teaser reel turnaround time (within 72 hrs)",
       "deadline": "30 days before",
       "tip": "Ask for drone license verification to avoid venue restrictions during Varmala.",
-      "done": false
+      "done": false,
+      "redFlags": [
+        "Raw unedited video footage withheld unless extra fee paid",
+        "Travel & luxury accommodation demanded separately for assistant crew",
+        "Album delivery delayed past 90 days without penalty"
+      ],
+      "bargainScript": "Hi team, we admire your portfolio. Before paying the deposit, please add a clause in the agreement: 100% raw footage handover via hard drive within 7 days, and 60-second Instagram teaser reel delivered within 72 hours of Vidaai."
     },
     {
       "category": "Floral Decorator",
       "task": "Approve stage 3D render and switch imported lilies to Indian marigolds/tuberoses",
       "deadline": "20 days before",
       "tip": "Directly ask if the floral framework can be repurposed from Haldi to Reception.",
-      "done": true
+      "done": true,
+      "redFlags": [
+        "Trussing and iron framework billed as extra line item",
+        "Artificial flower substitution without prior notice",
+        "Disposal and venue cleanup charges added at checkout"
+      ],
+      "bargainScript": "Bhaiya, we want the Haldi yellow backdrop frame repurposed for the evening Sangeet with fairy lights. Since the metal frame is reused, please discount the labor cost by ₹25,000 as agreed."
     },
     {
       "category": "DJ & Sound Engineer",
       "task": "Submit curated Bollywood/Punjabi Sangeet playlist and sound check wireless mics",
       "deadline": "10 days before",
       "tip": "Ensure sound technician is physically present near the stage for immediate troubleshooting.",
-      "done": false
+      "done": false,
+      "redFlags": [
+        "Police sound license (PPL/IPRS) not held by DJ",
+        "Microphone batteries not provided",
+        "Sound cutoff abruptly at 10 PM without acoustic indoor shift"
+      ],
+      "bargainScript": "Ji, please ensure you bring 4 UHF wireless microphones with fresh backup batteries and sound limiter compliance. Confirm you have indoor speakers so we can transition music seamlessly inside after 10 PM curfew."
     },
     {
       "category": "Panditji & Samagri",
       "task": "Receive complete puja samagri checklist and confirm exact Shubh Muhurat for Pheras",
       "deadline": "14 days before",
       "tip": "Appoint one responsible cousin/uncle in advance to handle the puja material delivery.",
-      "done": false
+      "done": false,
+      "redFlags": [
+        "Sudden demand for expensive silver items on the mandap day",
+        "Unclear dakshina leading to awkward negotiation during rituals",
+        "Arriving late due to double-booked muhurats"
+      ],
+      "bargainScript": "Pranam Panditji, please provide the complete samagri checklist today so we can buy wholesale. Kindly confirm the fixed dakshina and auspicious lagna timing so rituals commence promptly without delay."
     }
   ],
   "personalizedIdeas": [
     {
       "title": "Direct Mandi Floral Sourcing (Save ₹40,000)",
       "tag": "Budget Hack",
+      "savings": "₹40,000",
+      "difficulty": "Easy",
+      "assignTo": "Tech-savvy Cousin & Local Driver",
       "description": "Send a trusted family friend to the local morning wholesale flower mandi at 5:00 AM to buy bulk Marigolds and Rajnigandha. Hand over to your local decorator to slash markup by 40%."
     },
     {
       "title": "Tabletop QR 'Live Memory Cloud'",
       "tag": "Tech Twist",
+      "savings": "₹25,000 (Photo Album)",
+      "difficulty": "Easy",
+      "assignTo": "Younger Siblings / Friends",
       "description": "Place small wooden tent cards on every dinner table with a printed QR code. Guests scan without app downloads to upload candid moments into your private family Google Drive folder."
     },
     {
       "title": "Royal Kulhad Chai & Street Chaat Welcome",
       "tag": "Cultural Touch",
+      "savings": "₹30,000 (Bar Costs)",
+      "difficulty": "Easy",
+      "assignTo": "Catering Coordinator / Chacha",
       "description": "Ditch overpriced branded mocktails. Greet incoming relatives with hot ginger-cardamom tea in clay Kulhads and freshly fried mini pyaaz kachoris for authentic Rajasthani warmth."
     },
     {
       "title": "Animated WhatsApp Video Invites (Save ₹35,000)",
       "tag": "Modern Practicality",
+      "savings": "₹35,000 (Printing & Courier)",
+      "difficulty": "Moderate",
+      "assignTo": "Bride/Groom Directly",
       "description": "Skip bulky printed card boxes and courier delays. Use custom illustrated digital video invites with the couple's voiceover, reserving printed cards solely for the senior-most elders."
     },
     {
       "title": "Repurposed Haldi-to-Sangeet Props",
       "tag": "Eco & Smart",
+      "savings": "₹20,000 (Double Decor)",
+      "difficulty": "Easy",
+      "assignTo": "Creative Aunties & Decorator",
       "description": "Use brass Urlis with floating yellow flowers and bright bandhani dupattas for morning Haldi, then add tealights and brass lanterns at dusk for an enchanting Sangeet photobooth."
     }
   ]

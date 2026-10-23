@@ -103,41 +103,48 @@ Return ONLY valid JSON matching this schema:
       "title": "...",
       "date": "...",
       "schedule": [
-        { "time": "10:00 AM", "activity": "...", "details": "..." }
+        { "time": "10:00 AM", "activity": "...", "details": "...", "incharge": "..." }
       ]
     }
   ],
   "vendorChecklist": [
-    { "category": "Catering", "task": "...", "deadline": "45 days before", "tip": "...", "done": false }
+    { "category": "Catering", "task": "...", "deadline": "45 days before", "tip": "...", "done": false, "redFlags": ["..."], "bargainScript": "..." }
   ],
   "personalizedIdeas": [
-    { "title": "...", "tag": "Budget Hack", "description": "..." }
+    { "title": "...", "tag": "Budget Hack", "savings": "₹40,000", "difficulty": "Easy", "assignTo": "...", "description": "..." }
   ]
 }
 ```
 
 ---
 
-## 3. Algorithmic Budget Rebalancer Derivation
+## 3. Algorithmic Budget Rebalancer with Lock Shielding & Multi-Strategy Optimization
 
-Rather than forcing an expensive, non-deterministic second round-trip to the LLM when an event budget fluctuates, Celebration AI applies a deterministic solver:
+Rather than forcing an expensive, non-deterministic second round-trip to the LLM when an event budget fluctuates, Celebration AI applies an instant mathematical solver:
 
 $$\text{Deficit} = \sum_{i=1}^n A_i - \text{TotalBudget}$$
 
-For every category $i$ where $\text{Priority}_i \ne \text{"critical"}$ and $\text{Flexibility}_i > 0.2$:
+### Category Locking & Strategy Multipliers:
+1. If $\text{Locked}_i = \text{true}$, then Category $i$ is strictly shielded ($W_i = 0$).
+2. Strategy modifiers ($M_{strategy}$):
+   - **Balanced Mode**: Base flexibility coefficients ($0.1 \le f \le 1.0$).
+   - **Guest Experience Mode**: Shield Catering and DJ/Sound ($f_{food, music} \to 0.05$); increase burden on Decor & Favors ($f_{decor, favors} \to 1.0$).
+   - **Aggressive Trimming Mode**: Accelerate aesthetic cuts ($f_{decor} \to 1.5$).
+
+### Proportional Elasticity:
 $$\text{Capacity}_i = A_i - \text{MinAllowed}_i$$
-$$W_i = \text{Capacity}_i \times \text{Flexibility}_i$$
+$$W_i = \text{Capacity}_i \times \text{Flexibility}_i \times M_{strategy}$$
 $$\text{Cut}_i = \min\left(\text{Capacity}_i, \text{round}_{1000}\left(\text{Deficit} \times \frac{W_i}{\sum W}\right)\right)$$
 
-This ensures:
-1. **Instantaneous Execution** ($< 2 \text{ ms}$ latency).
-2. **Zero Hallucination Risk** (amounts always add up to 100% of the target).
-3. **Transparent Explanations** showing why Decor and Favors were cut while Catering and Logistics were guarded.
+This delivers:
+- **Instantaneous Execution** ($< 2 \text{ ms}$ latency).
+- **Deterministic Guarantees** (amounts always add up to 100% of the target).
+- **Transparent Explanations** explaining to the family exactly why and how the adjustments were calculated.
 
 ---
 
-## 4. Key Prompting Lessons Learned During Development
+## 4. Winning Innovations Grounded in the Brief
 
-1. **Negative Constraints Save Tokens and Code**: Stating *"never call Gemini from browser code"* and *"never show a blank screen or raw error"* prevented whole classes of architectural bugs before writing a single line.
-2. **Fallback-First Development**: Building the application around high-fidelity offline sample data first meant the frontend was 100% testable and operational before any network or quota dependencies were introduced.
-3. **Zero Secrets in Repository**: Strict `.env.example` templating and gitignore hygiene ensured zero credentials can leak into GitHub or submission PDFs.
+1. **Vendor Negotiation Shield**: Adds contract red flag detection and 1-click WhatsApp bargaining scripts to the "vendor checklists" requirement, protecting middle-class families from hidden vendor fees.
+2. **Google Calendar (.ics) & WhatsApp Dispatch**: Maps 1:1 to "timelines", solving the actual coordination friction of Indian celebrations where extended families coordinate over WhatsApp.
+3. **Category Lock Shielding**: Bridges algorithmic budgeting with human family priorities (e.g. allowing users to protect Photography while letting the algorithm optimize the rest).

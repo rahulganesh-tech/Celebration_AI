@@ -3,7 +3,7 @@
 > **PromptWars x HackArena** ([Hack2Skill](https://hack2skill.com) x **Google Developer Community**)  
 > **Challenge Track**: `[Challenge 5] Celebration & Event Planner`
 
-Celebration AI is an intelligent, accessible planning assistant designed specifically for middle-class families organizing milestone celebrations (weddings, milestone birthdays, anniversaries, and community festivals) without hiring expensive professional event planners. It produces a comprehensive 4-pillar blueprint—**itemized budgets**, **day-by-day timelines**, **vendor due diligence checklists**, and **personalized cultural ideas**—paired with an instant, explainable **Budget Rebalancer**.
+Celebration AI is an intelligent, accessible planning assistant designed specifically for middle-class families organizing milestone celebrations (weddings, milestone birthdays, anniversaries, and community festivals) without hiring expensive professional event planners. It produces a comprehensive 4-pillar blueprint—**itemized budgets**, **day-by-day timelines**, **vendor negotiation shields**, and **personalized cultural ideas**—paired with an instant, explainable **Budget Rebalancer**, **Google Calendar Sync**, and **WhatsApp Family Dispatch**.
 
 ---
 
@@ -14,31 +14,34 @@ A middle-class Indian family planning a high-stakes life event (such as a 3-day 
 
 ### Core Pain Points
 1. **Budget Anxiety & Opaque Allocation**: Families struggle to allocate a fixed budget across competing vendors and worry about accidental cost blowouts.
-2. **Vendor Coordination Chaos**: Lack of professional contracts leaves families vulnerable to hidden vendor costs, delayed deliverables, and overlooked curfew or power backup rules.
-3. **Timeline Breakdown**: Managing multi-generational rituals across multiple days often leads to schedule slippage, guest fatigue, and missed auspicious timings (*Shubh Muhurat*).
+2. **Hidden Vendor Fees & Contract Traps**: Lack of professional contracts leaves families vulnerable to hidden vendor costs (e.g. diesel generator billing, corkage markups, music curfew penalties, delayed deliverables).
+3. **Timeline & Ritual Friction**: Managing multi-generational rituals across multiple days often leads to schedule slippage, guest fatigue, and confusion over who in the family is responsible for which ceremony.
 4. **No Rebalancing Mechanism**: When one vendor inevitably demands more money, traditional planners or static templates offer no instant way to adjust other categories without breaking the total budget.
 
 ---
 
-## 💡 2. Solution Overview
+## 💡 2. Solution Overview & Key Innovations
 
 Celebration AI bridges the gap between expensive wedding agencies and disorganized spreadsheets:
 - **Plain Language Input**: Users simply describe their vision, location, guest count, and budget.
 - **4-Pillar Blueprint**: The system generates a complete, culturally grounded plan.
 - **Zero-Login & Instant Offline Demo**: Evaluators and users can experience full functionality with one click, requiring zero logins or API keys.
-- **Deterministic Twist (The Budget Rebalancer)**: An algorithmic solver that prevents overspending in real time without another slow AI round-trip.
+- **Deterministic Twist (The Budget Rebalancer)**: An algorithmic solver that prevents overspending in real time with **Category Lock Shielding** and **Multi-Strategy Optimization**.
+- **Google Calendar Integration**: 1-click `.ics` standard export that syncs auspicious muhurats and ceremony windows directly to Google Calendar.
+- **WhatsApp Family Dispatch**: 1-click formatted schedule generation tailored for Indian family WhatsApp groups with designated family member leads.
+- **Vendor Negotiation Shield**: Screens vendor contracts for hidden red flags and generates ready-to-send WhatsApp bargaining scripts.
 
 ---
 
 ## 🗺️ 3. Features Mapped 1:1 to Problem Statement
 
-| Problem Statement Requirement | Feature in Celebration AI | Implementation Detail |
+| Problem Statement Requirement | Feature in Celebration AI | Innovation & Implementation Detail |
 | :--- | :--- | :--- |
-| **Budgets** | **Smart INR Budget Breakdown** | Itemized category allocations (Catering, Stage Decor, Photography, Styling, DJ, Favors, Logistics) with percentage visualizer and priority badges (`critical`, `high`, `medium`, `low`). |
-| **Timelines** | **Day-by-Day Chronological Schedule** | Multi-day phase breakdown with exact time slots, ceremony descriptions, and family coordination notes (e.g. Mehndi, Sangeet, Haldi, Baraat, Pheras, Vidaai). |
-| **Vendor Checklists** | **Due Diligence Checklist** | Interactive task list with milestones, deadline timers ("45 days before"), and insider negotiation tips (e.g. asking for power backup DG sets, sound curfew limiters, drone permits). |
-| **Personalized Ideas** | **Cultural Hacks & Savings** | High-impact ideas tailored to Indian families (direct morning mandi flower sourcing to save 40%, tabletop QR photo clouds, Kulhad Chai welcome counters, animated WhatsApp invites). |
-| **The Original Twist** | **Algorithmic Budget Rebalancer** | When a user edits any category upward, an instant, explainable mathematical solver suggests proportional cuts to flexible categories (Decor, Favors) while locking critical baselines (Catering, Logistics Buffer). |
+| **Budgets** | **Smart INR Budget Breakdown** | Itemized category allocations (Catering, Stage Decor, Photography, Styling, DJ, Favors, Logistics) with percentage visualizer, priority badges, and editable inline amounts. |
+| **Timelines** | **Day-by-Day Chronological Schedule** | Multi-day phase breakdown with exact time slots, ceremony descriptions, and family coordination notes + **Google Calendar Sync (.ics)** + **WhatsApp Family Dispatch**. |
+| **Vendor Checklists** | **Vendor Negotiation Shield** | Actionable task checklist + **Contract Red Flag Detector** (guards against hidden diesel, curfew, or royalty fees) + **1-Click WhatsApp Bargaining Scripts**. |
+| **Personalized Ideas** | **Cultural Hacks & Savings** | High-impact ideas tailored to Indian families (mandi flower sourcing, tabletop QR photo clouds, Kulhad Chai welcome counters, animated WhatsApp invites) with **₹ savings pills** and **family lead assignments**. |
+| **The Original Twist** | **Algorithmic Budget Rebalancer** | Instant mathematical solver with **🔒 Category Locks** (protect favorite line items) and **Strategy Selectors** (`Balanced`, `Guest Experience First`, `Aggressive Trimming`). |
 
 ---
 
@@ -47,20 +50,23 @@ Celebration AI bridges the gap between expensive wedding agencies and disorganiz
 In middle-class celebrations, budgets are fixed ceilings. If Catering or Outfits cost ₹50,000 more, you cannot expand the budget—you must trim elsewhere.
 
 ### How it Works:
-1. **Category Weighting**: Each budget category is tagged with priority (`critical`, `high`, `medium`, `low`) and flexibility coefficient ($0.0 \le f \le 1.0$).
-2. **Protection of Critical Baselines**: Non-negotiable essentials like the **Emergency Logistics Buffer** and **Base Catering** are locked and protected from automated reductions.
-3. **Proportional Elasticity**: The algorithm computes available capacity ($A_i - MinAllowed_i$) for eligible flexible categories (Stage Decor, E-Invites & Favors, DJ/Sound) and balances the deficit proportionally.
-4. **Explainability**: Rather than making a mysterious black-box change, Celebration AI explains its logic clearly:
-   > *"Smart Algorithmic Recommendation: Trim Stage Decor by ₹30,000 (source flowers from local mandi) and Invitations/Favors by ₹20,000 (use digital WhatsApp invites). This keeps your Catering and Emergency Buffer 100% protected while restoring your exact ₹15,00,000 ceiling."*
-5. **One-Click Application**: Users can apply the recommendation with one click or reset to the original plan.
+1. **Category Weighting & Lock Shielding**: Each budget category features an interactive **🔒 Lock** toggle. When locked by the user, the category is strictly protected from automated reductions.
+2. **Strategy Optimization Modes**:
+   - ⚖️ **Balanced Proportional**: Distributes reductions evenly across all unlocked elastic categories.
+   - 🍽️ **Guest Experience First**: Shields Food, Catering, and DJ/Music; absorbs cuts exclusively in Stage Decor, Invitations, and Clothing.
+   - ✂️ **Aggressive Trimming**: Deeply scales back aesthetic markups while protecting logistics.
+3. **Explainability**: Rather than making a mysterious black-box change, Celebration AI explains its logic clearly:
+   > *"Smart Algorithmic Recommendation (Guest Experience Strategy): Trim Stage Decor by ₹30,000 and Invitations/Favors by ₹20,000. Preserves your 🔒 Locked Categories, Catering baselines, and Emergency Logistics Buffer while restoring your exact ₹15,00,000 ceiling."*
+4. **One-Click Application**: Users can apply the recommendation with one click or reset to the original plan.
 
 ---
 
 ## 🛠️ 5. Tech Stack
 
-- **Frontend**: Semantic HTML5, Vanilla CSS3 (custom design system, responsive CSS Grid/Flexbox, Outfit & Plus Jakarta Sans typography), Vanilla JavaScript (zero framework bloat, instant load times, 0 console errors).
+- **Frontend**: Semantic HTML5, Vanilla CSS3 (custom festive design system, responsive CSS Grid/Flexbox, Outfit & Plus Jakarta Sans typography), Vanilla JavaScript (zero framework bloat, instant load times, 0 console errors).
 - **Backend**: Node.js, Express.js.
 - **Generative AI**: Google Gemini API via official `@google/genai` SDK (`gemini-2.5-flash`).
+- **Google Integrations**: Google Calendar `.ics` engine, Google Fonts, and Google AI Studio prototyping.
 - **Containerization**: Single-container Dockerfile optimized for **Google Cloud Run**.
 
 ---
@@ -69,8 +75,9 @@ In middle-class celebrations, budgets are fixed ceilings. If Catering or Outfits
 
 1. **Google Gemini API (`@google/genai` SDK)**: Used server-side to analyze unstructured celebration requests and produce structured multi-pillar plans adhering to a strict JSON schema.
 2. **Google AI Studio**: Prompt engineering, system instruction tuning, and response schema prototyping.
-3. **Google Cloud Run**: Target serverless container platform for deployment (`Dockerfile` included).
-4. **Google Fonts**: `Outfit` and `Plus Jakarta Sans` for clean, accessible typography.
+3. **Google Calendar (.ics Sync)**: Standard calendar export syncing all ritual milestones directly into Google Calendar.
+4. **Google Cloud Run**: Target serverless container platform for deployment (`Dockerfile` included).
+5. **Google Fonts**: `Outfit` and `Plus Jakarta Sans` for clean, accessible typography.
 
 ---
 
@@ -79,7 +86,7 @@ In middle-class celebrations, budgets are fixed ceilings. If Catering or Outfits
 Celebration AI was built using a structured prompt engineering methodology:
 - **Role Assignment**: Hackathon pair-programmer persona with urgency, scope discipline, and compliance mindset.
 - **Hard Constraints First**: Server-only API calls, zero hardcoded secrets, `.gitignore` discipline, and repository size capped at <10 MB.
-- **Scope Discipline**: Restricted strictly to 1 polished core feature + 1 original twist directly mapped to the challenge words.
+- **Scope Discipline**: Restricted strictly to core features directly mapped to the challenge words with high-impact innovations.
 - **Fallback-First Reliability**: The application provides a complete, high-fidelity offline celebration engine. If the Gemini API key is missing, network is down, or quota is exhausted, it gracefully serves the tailored sample blueprint—**never displaying a raw error or blank screen**.
 - **Self-Verification**: Verification in headless and local environments before submission.
 
@@ -99,9 +106,9 @@ Celebration_AI/
 ├── sample-data.json           # High-fidelity benchmark Indian celebration dataset
 ├── server.js                  # Express server with Gemini API & offline fallback
 ├── public/
-│   ├── index.html             # Semantic responsive UI with 4 pillars
+│   ├── index.html             # Semantic responsive UI with 4 pillars & innovations
 │   ├── style.css              # Warm festive aesthetic, responsive grids & print styles
-│   └── app.js                 # Presets, tab navigation, checklist & Budget Rebalancer
+│   └── app.js                 # Rebalancer, Calendar sync, WhatsApp dispatch & Shield
 ├── README.md                  # Comprehensive documentation for evaluators
 └── PROMPTS.md                 # Log of development prompts and iterations
 ```

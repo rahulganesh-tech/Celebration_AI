@@ -39,7 +39,7 @@
         <h2 class="hero-heading">Plan your dream celebration without expensive event planners.</h2>
         <p class="hero-desc">
           Describe your vision in plain words. Get an instant, realistic plan tailored to your budget: 
-          <strong>itemized costs</strong>, <strong>day-by-day schedule</strong>, <strong>vendor checklist</strong>, and our algorithmic <strong>Budget Rebalancer</strong> that keeps you stress-free.
+          <strong>itemized costs</strong>, <strong>day-by-day schedule</strong>, <strong>vendor negotiation checklists</strong>, and our algorithmic <strong>Budget Rebalancer</strong> with Google Calendar sync.
         </p>
 
         <!-- Quick Preset Chips -->
@@ -140,7 +140,10 @@
           </div>
         </div>
         <div class="plan-header-actions">
-          <button type="button" id="printPlanBtn" class="btn btn-small btn-outline">🖨️ Print / Save PDF</button>
+          <button type="button" id="downloadCalendarBtn" class="btn btn-small btn-secondary" title="Export events to Google Calendar (.ics)">
+            📅 Sync Google Calendar
+          </button>
+          <button type="button" id="printPlanBtn" class="btn btn-small btn-outline">🖨️ Print / PDF</button>
           <button type="button" id="copyPlanSummaryBtn" class="btn btn-small btn-outline">📋 Copy Summary</button>
         </div>
       </div>
@@ -157,8 +160,8 @@
           <span>2. Day-by-Day Timeline</span>
         </button>
         <button class="tab-btn" data-tab="tabVendors">
-          <span class="tab-icon">📋</span> 
-          <span>3. Vendor Checklist</span>
+          <span class="tab-icon">🛡️</span> 
+          <span>3. Vendor Negotiation Shield</span>
           <span class="tab-badge badge-count" id="vendorCountBadge">6 Items</span>
         </button>
         <button class="tab-btn" data-tab="tabIdeas">
@@ -176,11 +179,28 @@
           <div class="rebalancer-header">
             <div>
               <div class="rebalancer-badge">🎯 Original Twist Feature</div>
-              <h3 class="rebalancer-title">Algorithmic Budget Rebalancer</h3>
+              <h3 class="rebalancer-title">Algorithmic Budget Rebalancer with Category Locks</h3>
               <p class="rebalancer-sub">
-                Middle-class reality: When one vendor costs more, you can't just expand the budget. 
-                Edit any category below — our instant algorithm computes the exact smart cuts from flexible categories to keep your total locked.
+                Middle-class reality: When one vendor costs more, you can't expand the budget. 
+                Edit any amount below or toggle 🔒 Locks on non-negotiables. Our algorithm computes exact smart cuts to keep your total locked.
               </p>
+
+              <!-- Strategy Selector -->
+              <div class="strategy-selector">
+                <span class="strategy-label">Rebalancer Strategy:</span>
+                <div class="strategy-chips">
+                  <button type="button" class="strategy-chip active" data-strategy="balanced">
+                    ⚖️ Balanced Proportional
+                  </button>
+                  <button type="button" class="strategy-chip" data-strategy="guest_first">
+                    🍽️ Guest Experience First (Guards Food & Music)
+                  </button>
+                  <button type="button" class="strategy-chip" data-strategy="aggressive">
+                    ✂️ Aggressive Trimming (Cut Aesthetics)
+                  </button>
+                </div>
+              </div>
+
             </div>
             <div class="budget-meter-box">
               <div class="meter-label">Budget Health</div>
@@ -194,9 +214,9 @@
             <div class="alert-icon">⚡</div>
             <div class="alert-content">
               <h4 class="alert-title" id="alertTitle">Budget Exceeded by ₹50,000</h4>
-              <p class="alert-desc" id="alertDesc">
-                Algorithm Recommendation: Reduce Decor by ₹30,000 and Invitations/Favors by ₹20,000 while protecting your non-negotiable Catering and Emergency Logistics Buffer.
-              </p>
+              <div class="alert-desc" id="alertDesc">
+                Algorithm Recommendation: Reduce Decor by ₹30,000 and Invitations/Favors by ₹20,000 while protecting your locked and high-priority categories.
+              </div>
               <div class="alert-actions">
                 <button type="button" id="applyRebalanceBtn" class="btn btn-primary btn-small">
                   ✨ Apply Rebalance Solution
@@ -219,8 +239,8 @@
 
         <!-- Editable Category Grid -->
         <div class="section-subheading">
-          <h3>Category Breakdown (Click any amount to adjust)</h3>
-          <span class="subheading-hint">Changes automatically trigger instant rebalancing analysis</span>
+          <h3>Category Breakdown (Click amounts to adjust or 🔒 to protect from cuts)</h3>
+          <span class="subheading-hint">Locked categories are strictly shielded during algorithmic rebalancing</span>
         </div>
 
         <div class="budget-grid" id="budgetGrid">
@@ -230,17 +250,26 @@
 
       <!-- TAB 2: Day-by-Day Timeline -->
       <div class="tab-content" id="tabTimeline">
+        <div class="timeline-meta-bar">
+          <div>
+            <h3>Day-by-Day Chronological Master Schedule</h3>
+            <p>Auspicious muhurats, arrival windows, and ritual milestones with designated family leads.</p>
+          </div>
+          <button type="button" id="syncCalendarTabBtn" class="btn btn-secondary btn-small">
+            📅 Download Google Calendar (.ics)
+          </button>
+        </div>
         <div class="timeline-container" id="timelineContainer">
           <!-- Populated by JS -->
         </div>
       </div>
 
-      <!-- TAB 3: Vendor Checklist -->
+      <!-- TAB 3: Vendor Checklist & Negotiation Shield -->
       <div class="tab-content" id="tabVendors">
         <div class="checklist-meta">
           <div>
-            <h3>Vendor Coordination & Due Diligence Checklist</h3>
-            <p>Every milestone includes insider negotiation questions and deadlines to protect your deposits.</p>
+            <h3>Vendor Coordination & Negotiation Shield</h3>
+            <p>Screen contracts against middle-class hidden fees and copy ready-to-send WhatsApp bargaining scripts.</p>
           </div>
           <div class="checklist-progress">
             <span id="checklistProgressText">2 of 6 tasks confirmed</span>
@@ -257,8 +286,8 @@
       <!-- TAB 4: Personalized Ideas & Cost Hacks -->
       <div class="tab-content" id="tabIdeas">
         <div class="section-subheading">
-          <h3>Culturally Tailored Hacks & High-Impact Ideas</h3>
-          <p>Practical suggestions designed specifically for middle-class celebrations without cheesy compromises.</p>
+          <h3>Culturally Grounded Cost Hacks & Smart Ideas</h3>
+          <p>Practical money-savers designed specifically for Indian celebrations without compromising dignity or joy.</p>
         </div>
         <div class="ideas-grid" id="ideasGrid">
           <!-- Populated by JS -->
