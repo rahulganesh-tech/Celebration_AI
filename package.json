@@ -1,12 +1,11 @@
 {
   "name": "celebration-ai",
   "version": "1.0.0",
-  "description": "GenAI-powered planning assistant for weddings, birthdays, and celebrations with an instant Budget Rebalancer.",
-  "main": "server.js",
-  "type": "commonjs",
+  "description": "Celebration AI (Event Budget, Timeline & Vendor Planner)",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node server/index.js",
+    "test": "node --test test/server.test.js"
   },
   "keywords": [
     "event-planner",
@@ -15,11 +14,6 @@
     "hackarena",
     "promptwars"
   ],
-  "author": "Celebration AI Team",
-  "license": "MIT",
-  "dependencies": {
-    "@google/genai": "^2.31.0",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2"
-  }
+  "author": "Rahul Ganesh S K",
+  "license": "MIT"
 }
