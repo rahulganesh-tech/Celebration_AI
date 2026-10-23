@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Celebration AI — GenAI Event & Wedding Planning Assistant</title>
+  <meta name="description" content="AI-powered planning assistant for Indian weddings, birthdays, and community events with budget breakdowns, day-by-day timelines, vendor checklists, and an instant Budget Rebalancer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top Navigation & Badges -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-icon">🎉</span>
+        <div>
+          <h1 class="brand-title">Celebration AI</h1>
+          <p class="brand-sub">Smart GenAI Planning for Life's Biggest Moments</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-accent">🏆 PromptWars x HackArena</span>
+        <span class="badge badge-outline">⚡ Zero Login Required</span>
+        <span class="badge badge-gemini" id="apiStatusBadge">✨ Gemini Powered</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container app-main">
+
+    <!-- Hero / Intro Banner -->
+    <section class="hero-card">
+      <div class="hero-content">
+        <span class="hero-tag">Specialized for Middle-Class Families Planning Big Events</span>
+        <h2 class="hero-heading">Plan your dream celebration without expensive event planners.</h2>
+        <p class="hero-desc">
+          Describe your vision in plain words. Get an instant, realistic plan tailored to your budget: 
+          <strong>itemized costs</strong>, <strong>day-by-day schedule</strong>, <strong>vendor checklist</strong>, and our algorithmic <strong>Budget Rebalancer</strong> that keeps you stress-free.
+        </p>
+
+        <!-- Quick Preset Chips -->
+        <div class="presets-section">
+          <span class="preset-label">Quick Presets:</span>
+          <div class="preset-chips">
+            <button type="button" class="preset-btn active" data-preset="wedding">
+              💍 Traditional 3-Day Wedding (₹15L • 250 Guests)
+            </button>
+            <button type="button" class="preset-btn" data-preset="birthday">
+              🎂 50th Golden Jubilee Birthday (₹3.5L • 80 Guests)
+            </button>
+            <button type="button" class="preset-btn" data-preset="anniversary">
+              🥂 Silver Jubilee Gala (₹6L • 150 Guests)
+            </button>
+            <button type="button" class="preset-btn" data-preset="community">
+              🪔 Grand Diwali Utsav (₹5L • 400 Guests)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Planning Input Form Card -->
+    <section class="planner-form-card" id="plannerInputSection">
+      <form id="planForm">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="eventPrompt">Describe Your Event in Plain Words <span class="req">*</span></label>
+            <textarea 
+              id="eventPrompt" 
+              rows="3" 
+              placeholder="e.g. Planning a 3-day Punjabi-Rajasthani wedding in Jaipur for 250 guests. We want vibrant Sangeet dance night, authentic Haldi, royal feast, and smart budget hacks to keep total under ₹15 Lakhs."
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="totalBudget">Total Budget (₹ INR)</label>
+            <input type="number" id="totalBudget" min="10000" step="5000" value="1500000" placeholder="1500000">
+          </div>
+
+          <div class="form-group">
+            <label for="guestCount">Expected Guests</label>
+            <input type="number" id="guestCount" min="10" step="5" value="250" placeholder="250">
+          </div>
+
+          <div class="form-group">
+            <label for="eventType">Celebration Type</label>
+            <select id="eventType">
+              <option value="Traditional Wedding" selected>Wedding (Multi-Day / Single-Day)</option>
+              <option value="Milestone Birthday">Milestone Birthday (1st, 18th, 50th, 60th)</option>
+              <option value="Anniversary Gala">Anniversary Celebration</option>
+              <option value="Community Festival">Community / Society Cultural Event</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="eventLocation">City / Destination</label>
+            <input type="text" id="eventLocation" value="Jaipur, Rajasthan" placeholder="e.g. Jaipur, Delhi NCR, Mumbai">
+          </div>
+        </div>
+
+        <!-- Action Row -->
+        <div class="form-actions">
+          <button type="button" id="tryDemoBtn" class="btn btn-secondary">
+            ⚡ Try One-Click Demo (Offline Ready)
+          </button>
+          <button type="submit" id="generatePlanBtn" class="btn btn-primary">
+            <span class="btn-spinner" id="btnSpinner" aria-hidden="true"></span>
+            <span id="btnText">✨ Generate Complete Plan</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Loading State Skeleton -->
+    <div id="loadingState" class="state-card loading-card hidden">
+      <div class="spinner-large"></div>
+      <h3>Generating Your Celebration Blueprint...</h3>
+      <p id="loadingStatusText">Analyzing budget allocations, designing schedule, and screening vendor checklists...</p>
+    </div>
+
+    <!-- Generated Plan Dashboard -->
+    <section id="planResultsSection" class="results-container">
+      
+      <!-- Plan Header Meta Card -->
+      <div class="plan-header-card">
+        <div class="plan-header-info">
+          <div class="plan-type-pill" id="resEventType">Traditional Multi-Day Wedding</div>
+          <h2 class="plan-title" id="resEventTitle">The Sharma Family 3-Day Wedding & Sangeet</h2>
+          <p class="plan-summary" id="resSummary">A high-spirited 3-day family wedding balancing Rajasthani heritage hospitality with disciplined middle-class budget allocation and vendor coordination.</p>
+          <div class="plan-tags">
+            <span class="plan-tag" id="resLocation">📍 Jaipur, Rajasthan</span>
+            <span class="plan-tag" id="resGuests">👥 250 Guests</span>
+            <span class="plan-tag" id="resBudgetTag">💰 Total: ₹15,00,000</span>
+            <span class="plan-tag" id="resPerGuestTag">🎯 ₹6,000 / guest</span>
+          </div>
+        </div>
+        <div class="plan-header-actions">
+          <button type="button" id="printPlanBtn" class="btn btn-small btn-outline">🖨️ Print / Save PDF</button>
+          <button type="button" id="copyPlanSummaryBtn" class="btn btn-small btn-outline">📋 Copy Summary</button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs for the 4 Core Pillars -->
+      <nav class="pillar-tabs" aria-label="Celebration Pillars">
+        <button class="tab-btn active" data-tab="tabBudget">
+          <span class="tab-icon">💰</span> 
+          <span>1. Budget & Rebalancer</span>
+          <span class="tab-badge" id="rebalanceStatusBadge">Balanced</span>
+        </button>
+        <button class="tab-btn" data-tab="tabTimeline">
+          <span class="tab-icon">📅</span> 
+          <span>2. Day-by-Day Timeline</span>
+        </button>
+        <button class="tab-btn" data-tab="tabVendors">
+          <span class="tab-icon">📋</span> 
+          <span>3. Vendor Checklist</span>
+          <span class="tab-badge badge-count" id="vendorCountBadge">6 Items</span>
+        </button>
+        <button class="tab-btn" data-tab="tabIdeas">
+          <span class="tab-icon">💡</span> 
+          <span>4. Personalized Ideas</span>
+          <span class="tab-badge badge-count" id="ideasCountBadge">5 Hacks</span>
+        </button>
+      </nav>
+
+      <!-- TAB 1: Budget Breakdown & The Rebalancer Twist -->
+      <div class="tab-content active" id="tabBudget">
+        
+        <!-- Budget Rebalancer Interactive Box -->
+        <div class="rebalancer-hero-card" id="rebalancerCard">
+          <div class="rebalancer-header">
+            <div>
+              <div class="rebalancer-badge">🎯 Original Twist Feature</div>
+              <h3 class="rebalancer-title">Algorithmic Budget Rebalancer</h3>
+              <p class="rebalancer-sub">
+                Middle-class reality: When one vendor costs more, you can't just expand the budget. 
+                Edit any category below — our instant algorithm computes the exact smart cuts from flexible categories to keep your total locked.
+              </p>
+            </div>
+            <div class="budget-meter-box">
+              <div class="meter-label">Budget Health</div>
+              <div class="meter-val" id="budgetStatusDisplay">₹15,00,000 / ₹15,00,000</div>
+              <div class="meter-diff zero" id="budgetDiffDisplay">Exact Match (100%)</div>
+            </div>
+          </div>
+
+          <!-- Rebalance Suggestion Banner (Appears when over budget) -->
+          <div class="rebalance-alert hidden" id="rebalanceAlert">
+            <div class="alert-icon">⚡</div>
+            <div class="alert-content">
+              <h4 class="alert-title" id="alertTitle">Budget Exceeded by ₹50,000</h4>
+              <p class="alert-desc" id="alertDesc">
+                Algorithm Recommendation: Reduce Decor by ₹30,000 and Invitations/Favors by ₹20,000 while protecting your non-negotiable Catering and Emergency Logistics Buffer.
+              </p>
+              <div class="alert-actions">
+                <button type="button" id="applyRebalanceBtn" class="btn btn-primary btn-small">
+                  ✨ Apply Rebalance Solution
+                </button>
+                <button type="button" id="resetBudgetBtn" class="btn btn-secondary btn-small">
+                  ↺ Reset Original
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Multi-segment Progress Bar -->
+          <div class="budget-progress-track" id="budgetProgressTrack">
+            <!-- populated by JS -->
+          </div>
+          <div class="budget-legend" id="budgetLegend">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- Editable Category Grid -->
+        <div class="section-subheading">
+          <h3>Category Breakdown (Click any amount to adjust)</h3>
+          <span class="subheading-hint">Changes automatically trigger instant rebalancing analysis</span>
+        </div>
+
+        <div class="budget-grid" id="budgetGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- TAB 2: Day-by-Day Timeline -->
+      <div class="tab-content" id="tabTimeline">
+        <div class="timeline-container" id="timelineContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- TAB 3: Vendor Checklist -->
+      <div class="tab-content" id="tabVendors">
+        <div class="checklist-meta">
+          <div>
+            <h3>Vendor Coordination & Due Diligence Checklist</h3>
+            <p>Every milestone includes insider negotiation questions and deadlines to protect your deposits.</p>
+          </div>
+          <div class="checklist-progress">
+            <span id="checklistProgressText">2 of 6 tasks confirmed</span>
+            <div class="check-progress-bar">
+              <div class="check-progress-fill" id="checklistProgressFill" style="width: 33%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="vendor-list" id="vendorList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- TAB 4: Personalized Ideas & Cost Hacks -->
+      <div class="tab-content" id="tabIdeas">
+        <div class="section-subheading">
+          <h3>Culturally Tailored Hacks & High-Impact Ideas</h3>
+          <p>Practical suggestions designed specifically for middle-class celebrations without cheesy compromises.</p>
+        </div>
+        <div class="ideas-grid" id="ideasGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <strong>Celebration AI</strong> — Built for PromptWars x HackArena (Hack2Skill & Google Developer Community).
+        <p class="footer-sub">Solving middle-class event coordination with responsible GenAI and instant deterministic algorithms.</p>
+      </div>
+      <div class="footer-right">
+        <span class="badge badge-outline">Single-Container Cloud Run Ready</span>
+        <span class="badge badge-outline">Main Branch Only</span>
+        <span class="badge badge-outline">&lt;10 MB Repo Size</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

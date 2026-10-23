@@ -1,0 +1,222 @@
+{
+  "meta": {
+    "eventName": "The Sharma Family 3-Day Wedding & Sangeet",
+    "eventType": "Traditional Multi-Day Wedding",
+    "location": "Jaipur, Rajasthan",
+    "guestCount": 250,
+    "totalBudget": 1500000,
+    "currency": "₹",
+    "summary": "A high-spirited 3-day family wedding balancing Rajasthani heritage hospitality with disciplined middle-class budget allocation and vendor coordination."
+  },
+  "budgetBreakdown": [
+    {
+      "id": "venue_catering",
+      "name": "Catering & Banquet Hall",
+      "amount": 600000,
+      "percentage": 40,
+      "priority": "critical",
+      "flexibility": 0.1,
+      "minAllowed": 450000,
+      "note": "Primary cost for 250 guests across 3 days: Welcome lunch, Sangeet live chaat, Haldi snacks, and Royal Wedding feast."
+    },
+    {
+      "id": "decor_floral",
+      "name": "Decor & Floral Stage",
+      "amount": 225000,
+      "percentage": 15,
+      "priority": "medium",
+      "flexibility": 0.8,
+      "minAllowed": 120000,
+      "note": "Marigold draping, fairytale lighting canopy, and Mandap floral structure. High savings potential with mandi flowers."
+    },
+    {
+      "id": "photography_video",
+      "name": "Photography & Cinematic Reels",
+      "amount": 180000,
+      "percentage": 12,
+      "priority": "high",
+      "flexibility": 0.3,
+      "minAllowed": 120000,
+      "note": "2 candid photographers, 1 traditional videographer, drone coverage during Varmala, and edited teaser reels."
+    },
+    {
+      "id": "clothing_styling",
+      "name": "Outfits & Groom/Bridal Styling",
+      "amount": 180000,
+      "percentage": 12,
+      "priority": "high",
+      "flexibility": 0.4,
+      "minAllowed": 100000,
+      "note": "Bridal lehenga, groom sherwani, family coordinated turbans (safas), and professional bridal makeup artist."
+    },
+    {
+      "id": "entertainment_music",
+      "name": "DJ, Sound System & Dhol",
+      "amount": 120000,
+      "percentage": 8,
+      "priority": "low",
+      "flexibility": 0.9,
+      "minAllowed": 50000,
+      "note": "Baraat Punjabi dhol ensemble, Sangeet sound mixer console, wireless mics, and ambient uplighting."
+    },
+    {
+      "id": "invites_favors",
+      "name": "E-Invites, Mithai & Return Gifts",
+      "amount": 75000,
+      "percentage": 5,
+      "priority": "low",
+      "flexibility": 0.9,
+      "minAllowed": 25000,
+      "note": "Custom animated WhatsApp invites + 150 artisanal dry-fruit & traditional jharokha sweet boxes for elders."
+    },
+    {
+      "id": "logistics_contingency",
+      "name": "Logistics & Pandit Buffer",
+      "amount": 120000,
+      "percentage": 8,
+      "priority": "critical",
+      "flexibility": 0.0,
+      "minAllowed": 100000,
+      "note": "Airport/station guest pickup cabs, emergency vendor overtime, puja samagri, and panditji dakshina."
+    }
+  ],
+  "timeline": [
+    {
+      "day": "Day 1",
+      "title": "Guest Arrival, Mehndi & Sangeet Gala",
+      "date": "Friday",
+      "schedule": [
+        {
+          "time": "11:00 AM",
+          "activity": "Guest Welcome & Earthen Kulhad Chai",
+          "details": "Check-in at heritage haveli guestrooms; welcome drinks and rose petal shower."
+        },
+        {
+          "time": "02:30 PM",
+          "activity": "Courtyard Mehndi & Folk Music",
+          "details": "Intimate henna application with local Rajasthani folk singer and dholak."
+        },
+        {
+          "time": "07:30 PM",
+          "activity": "Sangeet Night & Live Street-Food Stalls",
+          "details": "Choreographed family dance performances, DJ party, live chaat and jalebi counters."
+        }
+      ]
+    },
+    {
+      "day": "Day 2",
+      "title": "Auspicious Haldi, Baraat & Sacred Pheras",
+      "date": "Saturday",
+      "schedule": [
+        {
+          "time": "09:30 AM",
+          "activity": "Yellow Sunshine Haldi Ceremony",
+          "details": "Organic turmeric paste rituals with marigold flower petal shower and dhol beats."
+        },
+        {
+          "time": "04:30 PM",
+          "activity": "Royal Baraat Procession & Safa Tying",
+          "details": "Groom arrival with vintage open jeep, brass band, and family safa tying at the gates."
+        },
+        {
+          "time": "06:30 PM",
+          "activity": "Grand Varmala Exchange under Floral Canopy",
+          "details": "Milni ceremony between families followed by sunset Varmala with pyrotechnic fountains."
+        },
+        {
+          "time": "08:00 PM",
+          "activity": "Sacred Pheras & Royal Wedding Banquet",
+          "details": "Vedic vows around the holy fire followed by traditional Rajasthani Daal Baati Churma and multi-cuisine dinner."
+        }
+      ]
+    },
+    {
+      "day": "Day 3",
+      "title": "Emotional Vidaai & Farewell Brunch",
+      "date": "Sunday",
+      "schedule": [
+        {
+          "time": "09:30 AM",
+          "activity": "Vidaai Ceremony & Family Blessings",
+          "details": "Puffed rice throwing ritual, heartfelt elder blessings, and decorated car departure."
+        },
+        {
+          "time": "11:30 AM",
+          "activity": "Relaxed Farewell Brunch & Gift Distribution",
+          "details": "Light brunch (Poha, Kachori, fresh fruits) and distribution of mithai boxes to departing relatives."
+        }
+      ]
+    }
+  ],
+  "vendorChecklist": [
+    {
+      "category": "Catering & Halwai",
+      "task": "Lock in final per-plate menu (minimum 4 live counters + 2 traditional desserts)",
+      "deadline": "45 days before",
+      "tip": "Negotiate complimentary breakfast for 50 close relatives staying at the venue.",
+      "done": false
+    },
+    {
+      "category": "Venue Management",
+      "task": "Confirm sound limiter policy, diesel generator backup, and air cooling setup",
+      "deadline": "60 days before",
+      "tip": "Check exact curfew time for outdoor music (usually 10:00 PM by local police norms).",
+      "done": true
+    },
+    {
+      "category": "Photographer & Videographer",
+      "task": "Provide family member VIP list and finalize teaser reel turnaround time (within 72 hrs)",
+      "deadline": "30 days before",
+      "tip": "Ask for drone license verification to avoid venue restrictions during Varmala.",
+      "done": false
+    },
+    {
+      "category": "Floral Decorator",
+      "task": "Approve stage 3D render and switch imported lilies to Indian marigolds/tuberoses",
+      "deadline": "20 days before",
+      "tip": "Directly ask if the floral framework can be repurposed from Haldi to Reception.",
+      "done": true
+    },
+    {
+      "category": "DJ & Sound Engineer",
+      "task": "Submit curated Bollywood/Punjabi Sangeet playlist and sound check wireless mics",
+      "deadline": "10 days before",
+      "tip": "Ensure sound technician is physically present near the stage for immediate troubleshooting.",
+      "done": false
+    },
+    {
+      "category": "Panditji & Samagri",
+      "task": "Receive complete puja samagri checklist and confirm exact Shubh Muhurat for Pheras",
+      "deadline": "14 days before",
+      "tip": "Appoint one responsible cousin/uncle in advance to handle the puja material delivery.",
+      "done": false
+    }
+  ],
+  "personalizedIdeas": [
+    {
+      "title": "Direct Mandi Floral Sourcing (Save ₹40,000)",
+      "tag": "Budget Hack",
+      "description": "Send a trusted family friend to the local morning wholesale flower mandi at 5:00 AM to buy bulk Marigolds and Rajnigandha. Hand over to your local decorator to slash markup by 40%."
+    },
+    {
+      "title": "Tabletop QR 'Live Memory Cloud'",
+      "tag": "Tech Twist",
+      "description": "Place small wooden tent cards on every dinner table with a printed QR code. Guests scan without app downloads to upload candid moments into your private family Google Drive folder."
+    },
+    {
+      "title": "Royal Kulhad Chai & Street Chaat Welcome",
+      "tag": "Cultural Touch",
+      "description": "Ditch overpriced branded mocktails. Greet incoming relatives with hot ginger-cardamom tea in clay Kulhads and freshly fried mini pyaaz kachoris for authentic Rajasthani warmth."
+    },
+    {
+      "title": "Animated WhatsApp Video Invites (Save ₹35,000)",
+      "tag": "Modern Practicality",
+      "description": "Skip bulky printed card boxes and courier delays. Use custom illustrated digital video invites with the couple's voiceover, reserving printed cards solely for the senior-most elders."
+    },
+    {
+      "title": "Repurposed Haldi-to-Sangeet Props",
+      "tag": "Eco & Smart",
+      "description": "Use brass Urlis with floating yellow flowers and bright bandhani dupattas for morning Haldi, then add tealights and brass lanterns at dusk for an enchanting Sangeet photobooth."
+    }
+  ]
+}
