@@ -1,19 +1,30 @@
 {
   "name": "celebration-ai",
   "version": "1.0.0",
-  "description": "Celebration AI (Event Budget, Timeline & Vendor Planner)",
+  "description": "Celebration AI — GenAI event planning assistant for budgets, timelines, vendor checklists and ideas.",
+  "type": "module",
   "main": "server/index.js",
+  "private": true,
   "scripts": {
     "start": "node server/index.js",
+    "dev": "node server/index.js",
     "test": "node --test test/server.test.js"
   },
   "keywords": [
-    "event-planner",
+    "genai",
     "gemini",
-    "budget-rebalancer",
-    "hackarena",
+    "event-planning",
+    "hackathon",
     "promptwars"
   ],
   "author": "Rahul Ganesh S K",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahulganesh-tech/Celebration_AI.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
 }

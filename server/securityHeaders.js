@@ -1,23 +1,25 @@
 /**
- * @fileoverview Security response headers for Celebration AI.
- * Implements CSP, HSTS, X-Frame-Options, X-Content-Type-Options, and Permissions-Policy.
+ * Applies the standard security header set to every response: CSP, HSTS,
+ * X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and
+ * Permissions-Policy. Kept as a single explicit function (rather than a
+ * third-party middleware) so every header is easy to audit at a glance.
+ * @param {import('http').ServerResponse} res
  */
-
-/**
- * Applies strict HTTP security headers to a server response.
- * @param {import('http').ServerResponse} res - Outgoing HTTP response object.
- */
-function applySecurityHeaders(res) {
+export function applySecurityHeaders(res) {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
+  // Cloud Run terminates TLS in front of this process; this header still
+  // tells browsers to prefer HTTPS on repeat visits.
+  res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
   res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"
+    "Content-Security-Policy",
+    // style-src needs 'unsafe-inline' because the budget bars set their
+    // width via element.style in JS (CSSOM), which CSP treats as inline
+    // style; script-src deliberately has no such exception.
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; " +
+      "form-action 'none'; object-src 'none'"
   );
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 }
-
-module.exports = {
-  applySecurityHeaders
-};

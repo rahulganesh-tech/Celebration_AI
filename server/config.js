@@ -1,55 +1,37 @@
-/**
- * @fileoverview Shared configuration, environment variable loader, and limits.
- * Uses zero external dependencies; loads .env if present.
- */
+// Shared configuration and constants for the Celebration AI server.
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const path = require('path');
-const fs = require('fs');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/**
- * Lightweight .env parser for environments without pre-loaded env variables.
- */
-function loadEnvFile() {
-  const envPath = path.resolve(__dirname, '..', '.env');
-  if (fs.existsSync(envPath)) {
-    try {
-      const content = fs.readFileSync(envPath, 'utf8');
-      const lines = content.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-        const eqIdx = trimmed.indexOf('=');
-        if (eqIdx !== -1) {
-          const key = trimmed.slice(0, eqIdx).trim();
-          const val = trimmed.slice(eqIdx + 1).trim();
-          if (!process.env[key]) {
-            process.env[key] = val.replace(/^["']|["']$/g, '');
-          }
-        }
-      }
-    } catch (_) {
-      // Gracefully ignore file read errors
-    }
-  }
-}
+export const PUBLIC_DIR = path.join(__dirname, "..", "public");
+export const PORT = Number(process.env.PORT) || 8080;
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
-loadEnvFile();
+// Reliability / security limits
+export const MAX_REQUEST_BODY_BYTES = 10 * 1024; // /api/plan requests are small JSON — 10KB is generous
+export const GEMINI_TIMEOUT_MS = 15_000;
+export const MAX_DESCRIPTION_LENGTH = 2000;
+export const MAX_FREEFORM_LENGTH = 200; // city, eventType
+export const MAX_BUDGET = 100_000_000; // ₹10 crore ceiling — rejects garbage/overflow input
+export const MAX_GUESTS = 100_000;
 
-/**
- * Server and application runtime constants.
- */
-const PORT = parseInt(process.env.PORT, 10) || 8080;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const GEMINI_TIMEOUT_MS = 15000; // 15s outbound timeout
-const MAX_BODY_BYTES = 10 * 1024; // 10KB request body limit
-const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
+// Gemini call tuning
+export const GEMINI_TEMPERATURE = 0.8;
+export const GEMINI_ERROR_SNIPPET_LENGTH = 200; // chars of an error body to log, never more
 
-module.exports = {
-  PORT,
-  GEMINI_API_KEY,
-  GEMINI_MODEL,
-  GEMINI_TIMEOUT_MS,
-  MAX_BODY_BYTES,
-  PUBLIC_DIR
+export const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".ico": "image/x-icon"
 };
+
+// Static assets are content-hashed by nothing (plain filenames), so keep the
+// cache window short — long enough to help repeat views, short enough that
+// a redeploy is picked up quickly.
+export const STATIC_CACHE_CONTROL = "public, max-age=300";

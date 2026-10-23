@@ -1,137 +1,73 @@
-/**
- * @fileoverview Input validation, sanitization, clamping, and response shape validation.
- */
+// Input validation and sanitization for POST /api/plan. This is the single
+// choke point where untrusted client input is type-checked, length-capped,
+// and numerically bounded before it is interpolated into the Gemini prompt.
+import {
+  MAX_DESCRIPTION_LENGTH,
+  MAX_FREEFORM_LENGTH,
+  MAX_BUDGET,
+  MAX_GUESTS
+} from "./config.js";
+
+const ALLOWED_EVENT_TYPES = new Set([
+  "Wedding", "Birthday", "Community Event", "Anniversary", "Housewarming"
+]);
 
 /**
- * Valid event types allowed in the system.
+ * Coerces a value to a trimmed string capped at maxLength. Non-strings
+ * become an empty string rather than throwing, so a malformed payload can
+ * never crash validation.
+ * @param {unknown} value
+ * @param {number} maxLength
+ * @returns {string}
  */
-const ALLOWED_EVENT_TYPES = [
-  'wedding',
-  'birthday',
-  'anniversary',
-  'community',
-  'traditional wedding',
-  'milestone birthday',
-  'anniversary gala',
-  'community festival',
-  'celebration'
-];
-
-/**
- * Clamps a number to a bounded range, safely replacing NaN or non-finite inputs.
- * @param {any} val - Value to parse and clamp.
- * @param {number} min - Lower bound.
- * @param {number} max - Upper bound.
- * @param {number} defaultVal - Default fallback if input is NaN or invalid.
- * @returns {number} Clamped numeric value.
- */
-function clampNumber(val, min, max, defaultVal) {
-  const num = typeof val === 'number' ? val : parseFloat(val);
-  if (Number.isNaN(num) || !Number.isFinite(num)) {
-    return defaultVal;
-  }
-  if (num < min) return min;
-  if (num > max) return max;
-  return Math.round(num);
+function clampString(value, maxLength) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, maxLength);
 }
 
 /**
- * Validates and clamps all fields of an event planning request.
- * @param {object} payload - Incoming request body.
- * @returns {{ valid: boolean, error?: string, data?: object }} Validation result.
+ * Coerces a value to a finite, non-negative number capped at max.
+ * Anything non-numeric or negative becomes 0 rather than NaN or a
+ * negative amount reaching the prompt.
+ * @param {unknown} value
+ * @param {number} max
+ * @returns {number}
  */
-function validatePlanInput(payload) {
-  if (!payload || typeof payload !== 'object') {
-    return { valid: false, error: 'Request body must be a JSON object' };
+function clampNumber(value, max) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, max);
+}
+
+/**
+ * Validates and sanitizes an incoming /api/plan request body.
+ * Returns { ok: true, data } or { ok: false, error }.
+ * This is the single point where untrusted client input is shaped before
+ * it is interpolated into the prompt sent to Gemini, and before it is
+ * echoed back in error logs.
+ */
+export function validatePlanRequest(payload) {
+  if (!payload || typeof payload !== "object") {
+    return { ok: false, error: "Invalid request body." };
   }
 
-  const rawDescription = payload.description || payload.prompt || '';
-  if (typeof rawDescription !== 'string' || !rawDescription.trim()) {
-    return { valid: false, error: 'Description is required' };
+  const description = clampString(payload.description, MAX_DESCRIPTION_LENGTH);
+  if (!description) {
+    return { ok: false, error: "Please describe your event." };
   }
 
-  // Length-capped and trimmed description (1000 characters max)
-  const description = rawDescription.trim().slice(0, 1000);
-
-  // Clamped budget (min: 10,000, max: 100,000,000; default: 1,500,000)
-  const budget = clampNumber(payload.budget || payload.totalBudget, 10000, 100000000, 1500000);
-
-  // Clamped guests (min: 5, max: 50,000; default: 250)
-  const guests = clampNumber(payload.guests || payload.guestCount, 5, 50000, 250);
-
-  // Sanitized event type
-  const rawType = typeof payload.eventType === 'string' ? payload.eventType.trim().toLowerCase() : '';
-  const isAllowed = ALLOWED_EVENT_TYPES.some((t) => rawType.includes(t));
-  const eventType = isAllowed && payload.eventType ? String(payload.eventType).trim().slice(0, 80) : 'Celebration';
-
-  // Sanitized city
-  const rawCity = typeof (payload.city || payload.location) === 'string' ? (payload.city || payload.location).trim() : 'Local';
-  const city = rawCity.slice(0, 100) || 'Local';
-
-  // Sanitized date
-  const rawDate = typeof payload.date === 'string' ? payload.date.trim() : 'Upcoming';
-  const date = rawDate.slice(0, 50) || 'Upcoming';
-
-  const currency = typeof payload.currency === 'string' && payload.currency.trim() ? payload.currency.trim().slice(0, 5) : '₹';
+  const rawEventType = clampString(payload.eventType, MAX_FREEFORM_LENGTH);
+  const eventType = ALLOWED_EVENT_TYPES.has(rawEventType) ? rawEventType : "Event";
 
   return {
-    valid: true,
+    ok: true,
     data: {
-      description,
       eventType,
-      budget,
-      guests,
-      city,
-      date,
-      currency
+      description,
+      budget: clampNumber(payload.budget, MAX_BUDGET),
+      guests: clampNumber(payload.guests, MAX_GUESTS),
+      city: clampString(payload.city, MAX_FREEFORM_LENGTH),
+      date: clampString(payload.date, 40)
     }
   };
 }
-
-/**
- * Validates that an AI or fallback response matches the required 4-deliverable schema.
- * @param {any} plan - Object to check.
- * @returns {boolean} True if plan shape is strictly valid.
- */
-function isValidPlanShape(plan) {
-  if (!plan || typeof plan !== 'object') return false;
-
-  // 1. Budget breakdown check
-  if (!plan.budget || typeof plan.budget !== 'object') return false;
-  if (typeof plan.budget.total !== 'number' || plan.budget.total <= 0) return false;
-  if (!Array.isArray(plan.budget.categories) || plan.budget.categories.length < 3) return false;
-
-  for (const cat of plan.budget.categories) {
-    if (!cat || typeof cat !== 'object') return false;
-    if (typeof cat.name !== 'string' || !cat.name.trim()) return false;
-    if (typeof cat.amount !== 'number' || cat.amount < 0) return false;
-  }
-
-  // 2. Timeline check
-  if (!Array.isArray(plan.timeline) || plan.timeline.length < 3) return false;
-  for (const item of plan.timeline) {
-    if (!item || typeof item !== 'object') return false;
-    if (typeof item.when !== 'string' || typeof item.what !== 'string') return false;
-  }
-
-  // 3. Vendors check
-  if (!Array.isArray(plan.vendors) || plan.vendors.length < 3) return false;
-  for (const item of plan.vendors) {
-    if (!item || typeof item !== 'object') return false;
-    if (typeof item.name !== 'string' || typeof item.note !== 'string') return false;
-  }
-
-  // 4. Ideas check
-  if (!Array.isArray(plan.ideas) || plan.ideas.length < 2) return false;
-  for (const idea of plan.ideas) {
-    if (typeof idea !== 'string' || !idea.trim()) return false;
-  }
-
-  return true;
-}
-
-module.exports = {
-  clampNumber,
-  validatePlanInput,
-  isValidPlanShape
-};

@@ -1,172 +1,115 @@
-/**
- * @fileoverview Main HTTP server entry point for Celebration AI.
- * Implements routing, 10KB request size limits, security headers, and method verification.
- * Zero external dependencies (uses Node.js built-in http module).
- */
+// Celebration AI — minimal Node server (no external dependencies).
+// Serves the static frontend and exposes POST /api/plan, which calls the
+// Gemini API server-side only. Falls back to a sample plan on any failure
+// so the UI never shows a blank screen or a raw error.
+//
+// Module layout:
+// config.js shared constants / env
+// securityHeaders.js response security headers (CSP, HSTS, etc.)
+// validate.js input validation + sanitization for /api/plan
+// gemini.js prompt building + the Gemini API call
+// staticFiles.js static file serving (gzip, caching, path-traversal guard)
 
-const http = require('http');
-const { PORT, MAX_BODY_BYTES } = require('./config');
-const { applySecurityHeaders } = require('./securityHeaders');
-const { validatePlanInput } = require('./validate');
-const { generatePlan } = require('./gemini');
-const { serveStaticFile } = require('./staticFiles');
+import http from "node:http";
+import { PORT, GEMINI_API_KEY, MAX_REQUEST_BODY_BYTES } from "./config.js";
+import { applySecurityHeaders } from "./securityHeaders.js";
+import { validatePlanRequest } from "./validate.js";
+import { callGemini } from "./gemini.js";
+import { serveStatic } from "./staticFiles.js";
 
 /**
- * Handles incoming HTTP requests.
- * @param {import('http').IncomingMessage} req - Inbound request.
- * @param {import('http').ServerResponse} res - Outbound response.
+ * Writes a JSON response with the standard security headers applied.
+ * @param {import('http').ServerResponse} res
+ * @param {number} status - HTTP status code.
+ * @param {object} obj - Serialized as the response body.
  */
-function handleRequest(req, res) {
-  // Always apply security headers to every response
+function sendJSON(res, status, obj) {
+  const body = JSON.stringify(obj);
   applySecurityHeaders(res);
-
-  const method = req.method ? req.method.toUpperCase() : 'GET';
-
-  // Reject unexpected HTTP methods with 405 Method Not Allowed
-  if (method !== 'GET' && method !== 'POST' && method !== 'HEAD') {
-    res.statusCode = 405;
-    res.setHeader('Allow', 'GET, POST, HEAD');
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ error: `Method ${method} Not Allowed` }));
-    return;
-  }
-
-  // Parse request URL
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(req.url || '/', 'http://localhost');
-  } catch (_) {
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('Bad Request');
-    return;
-  }
-
-  const pathname = parsedUrl.pathname;
-
-  // Endpoint: Health check
-  if (method === 'GET' && (pathname === '/healthz' || pathname === '/api/health')) {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ status: 'ok' }));
-    return;
-  }
-
-  // Endpoint: Generate Event Plan (POST /api/plan)
-  if (pathname === '/api/plan') {
-    if (method !== 'POST') {
-      res.statusCode = 405;
-      res.setHeader('Allow', 'POST');
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.end(JSON.stringify({ error: 'Method Not Allowed' }));
-      return;
-    }
-
-    // Early rejection if Content-Length header exceeds MAX_BODY_BYTES (10KB)
-    const contentLength = req.headers['content-length'];
-    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
-      res.statusCode = 413;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.end(JSON.stringify({ error: 'Payload Too Large: 10KB body limit exceeded' }));
-      return;
-    }
-
-    let bytesReceived = 0;
-    const bodyChunks = [];
-    let isOversized = false;
-
-    req.on('data', (chunk) => {
-      bytesReceived += chunk.length;
-      if (bytesReceived > MAX_BODY_BYTES) {
-        isOversized = true;
-        req.destroy();
-        if (!res.headersSent) {
-          res.statusCode = 413;
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.end(JSON.stringify({ error: 'Payload Too Large: 10KB body limit exceeded' }));
-        }
-        return;
-      }
-      bodyChunks.push(chunk);
-    });
-
-    req.on('end', async () => {
-      if (isOversized || res.headersSent) return;
-
-      const rawBody = Buffer.concat(bodyChunks).toString('utf8');
-      let payload;
-
-      try {
-        payload = JSON.parse(rawBody || '{}');
-      } catch (err) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ error: 'Malformed JSON in request body' }));
-        return;
-      }
-
-      // Input validation and bounds clamping
-      const validation = validatePlanInput(payload);
-      if (!validation.valid) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ error: validation.error }));
-        return;
-      }
-
-      try {
-        const plan = await generatePlan(validation.data);
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify(plan));
-      } catch (err) {
-        // Safe exception containment — never leak internal stack traces
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ ...require('./gemini').getFallbackPlan(validation.data), source: 'fallback' }));
-      }
-    });
-
-    req.on('error', (err) => {
-      if (!res.headersSent) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ error: err.message || 'Request stream error' }));
-      }
-    });
-
-    return;
-  }
-
-  // Handle all other GET / HEAD requests as static files
-  if (method === 'GET' || method === 'HEAD') {
-    serveStaticFile(req, res, pathname);
-    return;
-  }
-
-  // Fallback 404
-  res.statusCode = 404;
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-  res.end('404 Not Found');
+  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.end(body);
 }
 
 /**
- * Creates and returns the HTTP server instance.
- * @returns {import('http').Server}
+ * Handles POST /api/plan end-to-end: streams and size-limits the request
+ * body, parses and validates it, calls Gemini, and always responds with a
+ * usable plan — either a live one or the graceful fallback — never a raw
+ * error or an unhandled rejection.
+ * @param {import('http').IncomingMessage} req
+ * @param {import('http').ServerResponse} res
  */
-function createServer() {
-  return http.createServer(handleRequest);
-}
+function handleApiPlan(req, res) {
+  let body = "";
+  let tooLarge = false;
 
-// Start server when executed directly
-if (require.main === module) {
-  const server = createServer();
-  server.listen(PORT, () => {
-    console.log(`[Celebration AI] Production server listening on port ${PORT}`);
+  req.on("data", (chunk) => {
+    if (tooLarge) return;
+    body += chunk;
+    if (body.length > MAX_REQUEST_BODY_BYTES) {
+      tooLarge = true;
+      // Respond before tearing down the connection, so the client actually
+      // receives the 413 instead of seeing a reset connection.
+      sendJSON(res, 413, { error: "Request too large." });
+      req.destroy();
+    }
+  });
+
+  req.on("end", async () => {
+    if (tooLarge) {
+      return;
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(body || "{}");
+    } catch {
+      sendJSON(res, 400, { error: "Invalid request body." });
+      return;
+    }
+
+    const validated = validatePlanRequest(payload);
+    if (!validated.ok) {
+      sendJSON(res, 400, { error: validated.error });
+      return;
+    }
+
+    try {
+      const plan = await callGemini(validated.data);
+      sendJSON(res, 200, { plan, source: "live" });
+    } catch (err) {
+      // Never surface a raw error or blank screen to the user — the
+      // frontend has its own sample-plan fallback for this case.
+      console.error("[/api/plan] falling back:", err.message);
+      sendJSON(res, 200, {
+        error: "AI generation unavailable right now, showing a sample plan instead.",
+        source: "fallback"
+      });
+    }
+  });
+
+  req.on("error", () => {
+    // Client disconnected mid-upload; nothing to respond to.
   });
 }
 
-module.exports = {
-  handleRequest,
-  createServer
-};
+const server = http.createServer((req, res) => {
+  if (req.method === "POST" && req.url === "/api/plan") {
+    handleApiPlan(req, res);
+    return;
+  }
+  if (req.method === "GET" && req.url === "/healthz") {
+    sendJSON(res, 200, { ok: true });
+    return;
+  }
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    sendJSON(res, 405, { error: "Method not allowed." });
+    return;
+  }
+  serveStatic(req, res);
+});
+
+server.listen(PORT, () => {
+  console.log(`Celebration AI listening on port ${PORT} (Gemini key ${GEMINI_API_KEY ? "present" : "MISSING — fallback mode"})`);
+});
+
+export default server;

@@ -1,3 +1,4 @@
+# Celebration AI — zero-dependency Node server, same deploy shape as ThunAI.
 FROM node:20-slim
 WORKDIR /app
 COPY package.json ./

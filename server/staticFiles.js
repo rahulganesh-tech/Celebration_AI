@@ -1,116 +1,62 @@
-/**
- * @fileoverview Static file server with gzip compression, caching headers, and strict path-traversal guard.
- * Zero external dependencies (uses Node.js built-in http, fs, path, and zlib).
- */
+import fs from "node:fs";
+import path from "node:path";
+import zlib from "node:zlib";
+import { MIME, PUBLIC_DIR, STATIC_CACHE_CONTROL } from "./config.js";
+import { applySecurityHeaders } from "./securityHeaders.js";
 
-const path = require('path');
-const fs = require('fs');
-const zlib = require('zlib');
-const { PUBLIC_DIR } = require('./config');
+const COMPRESSIBLE = new Set([".html", ".js", ".css", ".json", ".svg"]);
 
 /**
- * MIME type mapping for static files.
+ * Serves a file from public/, with gzip compression for text assets when
+ * the client supports it, short-lived caching, and a hard guard against
+ * path traversal outside PUBLIC_DIR.
  */
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.txt': 'text/plain; charset=utf-8'
-};
+export function serveStatic(req, res) {
+  let reqPath = req.url.split("?")[0];
+  if (reqPath === "/") reqPath = "/index.html";
 
-/**
- * Determines content type from file extension.
- * @param {string} filePath - Absolute file path.
- * @returns {string} MIME type string.
- */
-function getContentType(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  return MIME_TYPES[ext] || 'application/octet-stream';
-}
+  const filePath = path.normalize(path.join(PUBLIC_DIR, reqPath));
 
-/**
- * Serves a static file from public directory with path-traversal prevention,
- * gzip compression, and short-lived caching headers.
- * @param {import('http').IncomingMessage} req - Inbound HTTP request.
- * @param {import('http').ServerResponse} res - Outbound HTTP response.
- * @param {string} requestPath - Normalized URL pathname.
- */
-function serveStaticFile(req, res, requestPath) {
-  // Normalize root to index.html
-  const cleanPath = requestPath === '/' || requestPath === '' ? '/index.html' : requestPath;
-
-  // Strict path-traversal check: resolve path and ensure it remains strictly inside PUBLIC_DIR
-  const resolvedPath = path.resolve(PUBLIC_DIR, '.' + cleanPath);
-  const normalizedPublic = path.normalize(PUBLIC_DIR);
-
-  if (!resolvedPath.startsWith(normalizedPublic + path.sep) && resolvedPath !== normalizedPublic) {
-    res.statusCode = 403;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('Access Denied: Path traversal is not permitted.');
+  // Path traversal guard: resolved path must stay inside PUBLIC_DIR.
+  if (!filePath.startsWith(PUBLIC_DIR + path.sep) && filePath !== PUBLIC_DIR) {
+    applySecurityHeaders(res);
+    res.writeHead(403, { "Content-Type": "text/plain" });
+    res.end("Forbidden");
     return;
   }
 
-  // Check file existence
-  if (!fs.existsSync(resolvedPath)) {
-    res.statusCode = 404;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('404 Not Found');
-    return;
-  }
-
-  const stat = fs.statSync(resolvedPath);
-  if (stat.isDirectory()) {
-    // If directory, try index.html inside it
-    const indexInDir = path.join(resolvedPath, 'index.html');
-    if (fs.existsSync(indexInDir)) {
-      return serveStaticFile(req, res, path.join(cleanPath, 'index.html'));
-    }
-    res.statusCode = 404;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('404 Not Found');
-    return;
-  }
-
-  const contentType = getContentType(resolvedPath);
-  res.setHeader('Content-Type', contentType);
-
-  // Cache-Control headers: short-lived caching for static assets, no-cache for HTML
-  if (resolvedPath.endsWith('.html')) {
-    res.setHeader('Cache-Control', 'no-cache');
-  } else {
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-  }
-
-  const rawContent = fs.readFileSync(resolvedPath);
-  const acceptEncoding = req.headers['accept-encoding'] || '';
-
-  // Gzip compression if client accepts it
-  if (acceptEncoding.includes('gzip')) {
-    try {
-      const compressed = zlib.gzipSync(rawContent);
-      res.setHeader('Content-Encoding', 'gzip');
-      res.setHeader('Vary', 'Accept-Encoding');
-      res.setHeader('Content-Length', compressed.length);
-      res.statusCode = 200;
-      res.end(compressed);
+  fs.readFile(filePath, (err, data) => {
+    applySecurityHeaders(res);
+    if (err) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not found");
       return;
-    } catch (_) {
-      // Fallback to uncompressed on gzip error
     }
-  }
 
-  res.setHeader('Content-Length', rawContent.length);
-  res.statusCode = 200;
-  res.end(rawContent);
+    const ext = path.extname(filePath);
+    const contentType = MIME[ext] || "application/octet-stream";
+    const headers = {
+      "Content-Type": contentType,
+      "Cache-Control": STATIC_CACHE_CONTROL
+    };
+
+    const acceptsGzip = (req.headers["accept-encoding"] || "").includes("gzip");
+    if (acceptsGzip && COMPRESSIBLE.has(ext)) {
+      zlib.gzip(data, (gzipErr, compressed) => {
+        if (gzipErr) {
+          res.writeHead(200, headers);
+          res.end(data);
+          return;
+        }
+        headers["Content-Encoding"] = "gzip";
+        headers["Vary"] = "Accept-Encoding";
+        res.writeHead(200, headers);
+        res.end(compressed);
+      });
+      return;
+    }
+
+    res.writeHead(200, headers);
+    res.end(data);
+  });
 }
-
-module.exports = {
-  getContentType,
-  serveStaticFile
-};
